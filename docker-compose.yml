@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: fullcycle
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - fullcycle-network
+
+  node:
+    build: ./node
+    container_name: app
+    volumes:
+      - ./node:/usr/src/app
+    depends_on:
+      - mysql
+    networks:
+      - fullcycle-network
+    ports:
+      - "3000:3000"
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - node
+    networks:
+      - fullcycle-network
+
+volumes:
+  mysql_data:
+
+networks:
+  fullcycle-network:
+    driver: bridge
